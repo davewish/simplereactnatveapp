@@ -6,67 +6,42 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native';
+import {Table, Row, Rows} from 'react-native-table-component';
+import {connect} from 'react-redux';
+import {getData} from '../actions/index';
+import {useLinkProps} from '@react-navigation/native';
 
 //Styles
+const mapStateToProps = (state) => {
+  return {contacts: state.contacts};
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 22,
-  },
-  sectionHeader: {
-    paddingTop: 2,
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingBottom: 2,
-    fontSize: 14,
-    fontWeight: 'bold',
-    backgroundColor: 'rgba(247,247,247,1.0)',
-  },
-  item: {
-    padding: 10,
-    fontSize: 18,
-    height: 44,
-  },
-});
-
-const DataTable = () => {
-  const [isLoading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
+const DataTable = ({getData, contacts}) => {
+  const [tableHead, setTableHead] = useState([
+    'Name',
+    'Phone Number',
+    'Email',
+    'Country',
+  ]);
 
   // fetching Data from remote API
   useEffect(() => {
-    fetch('https://api.jsonbin.io/b/5f306844dddf413f95c0d9f9/8', {
-      method: 'GET',
-      withCredentials: true,
-      headers: {
-        'secret-key':
-          '$2b$10$HbPophOzGB1kcv3azKUSE.yjSwK6FbqDDNhs7lLglxG1JMLTluYJ6',
-        'Content-Type': 'application/json',
-      },
-    })
-      .then((response) => response.json())
-      .then((json) => setData(json.contacts))
-      .catch((error) => console.error(error))
-      .finally(() => setLoading(false));
+    getData();
   }, []);
 
   return (
     <View style={styles.container}>
-      {isLoading ? (
-        <ActivityIndicator />
-      ) : (
-        <SectionList
-          sections={data}
-          renderItem={({item}) => <Text style={styles.item}>{item}</Text>}
-          renderSectionHeader={({section}) => (
-            <Text style={styles.sectionHeader}>{section.title}</Text>
-          )}
-          keyExtractor={(item, index) => index}
-        />
-      )}
+      <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
+        <Row data={tableHead} style={styles.head} textStyle={styles.text} />
+        <Rows data={contacts} textStyle={styles.text} />
+      </Table>
     </View>
   );
 };
+const styles = StyleSheet.create({
+  container: {flex: 1, padding: 16, paddingTop: 5, backgroundColor: '#fff'},
+  head: {height: 45, backgroundColor: '#f1f8ff'},
+  text: {margin: 6},
+});
 
-export default DataTable;
+export default connect(mapStateToProps, {getData})(DataTable);
